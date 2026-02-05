@@ -1,0 +1,72 @@
+# ROS 2 Workspace .gitignore
+
+# Colcon build directories
+build/
+install/
+log/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+*.egg
+MANIFEST
+
+# C++
+*.o
+*.a
+*.so
+*.exe
+*.out
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.code-workspace
+
+# ROS
+*.bag
+*.db3
+*.mcap
+
+# Documentation
+*.html
+*.pdf
+_build/
+_static/
+_templates/
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# OS specific
+Thumbs.db
+.directory
+.Trash-*
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
