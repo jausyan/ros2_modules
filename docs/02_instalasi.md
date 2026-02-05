@@ -311,7 +311,7 @@ printenv | grep ROS
 
 ## Next Steps
 
-Lanjut ke [Konsep Dasar ROS 2](03_konsep_dasar.md) untuk memahami fundamental ROS 2!
+Lanjut ke [Konsep Dasar ROS 2](04_perintah_dasar.md) untuk memahami fundamental ROS 2!
 
 ---
 
