@@ -624,7 +624,7 @@ ros2 topic echo <TAB>  # List available topics
 
 ## Rangkuman
 
-✅ **Perintah Utama:**
+ **Perintah Utama:**
 - `ros2 node` - Manajemen nodes
 - `ros2 topic` - Bekerja dengan topics
 - `ros2 service` - Call services
@@ -634,7 +634,7 @@ ros2 topic echo <TAB>  # List available topics
 - `ros2 bag` - Record & playback
 - `rqt` - GUI tools
 
-✅ **Best Practices:**
+ **Best Practices:**
 - Gunakan `ros2 doctor` untuk health check
 - Gunakan `rqt_graph` untuk visualisasi
 - Record important data dengan `ros2 bag`

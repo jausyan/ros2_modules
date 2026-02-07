@@ -1,15 +1,10 @@
 # 1. Pengenalan ROS 2
 
-## Apa itu Middleware dan ROS 2?
-
-**Middleware** adalah lapisan perangkat lunak yang berada di antara sistem operasi dan aplikasi. Middleware berfungsi sebagai "jembatan" yang memfasilitasi komunikasi, manajemen data, dan koordinasi antar berbagai komponen dalam sistem yang kompleks.
-
 **ROS 2 (Robot Operating System 2)** adalah middleware open-source yang dirancang khusus untuk pengembangan robot. Meskipun namanya "Operating System", ROS 2 bukanlah sistem operasi seperti Linux atau Windows, melainkan **framework middleware** yang menyediakan:
 
 - **Infrastruktur komunikasi** antar komponen robot
 - **Tools dan libraries** untuk pemrograman robotik
 - **Konvensi standar** untuk integrasi hardware dan software
-- **Abstraksi kompleksitas** sistem robotik
 
 Dengan ROS 2, developer tidak perlu membangun sistem komunikasi dari nol. ROS 2 sudah menyediakan mekanisme untuk menghubungkan sensor, aktuator, algoritma, dan komponen lainnya secara efisien.
 
@@ -151,7 +146,7 @@ ROS 2 bekerja berdasarkan **arsitektur modular berbasis graph** dimana setiap mo
 
 ## Konsep Dasar: Nodes, Topics, Services
 
-### 1. **Nodes - Program Kecil yang Punya Tugas Spesifik**
+### 1. **Nodes**
 
 **Node** adalah program individu dalam ROS 2. Bayangkan seperti pekerja dalam pabrik - setiap pekerja punya tugas masing-masing.
 
@@ -169,7 +164,7 @@ Robot Sederhana:
 - **Reusable**: Pakai ulang di proyek lain
 - **Safe**: Kalau satu crash, yang lain tetap jalan
 
-### 2. **Topics - Jalan Raya untuk Kirim Data**
+### 2. **Topics**
 
 **Topic** adalah "saluran komunikasi" tempat nodes kirim dan terima data.
 
@@ -258,7 +253,7 @@ class TemperatureSubscriber(Node):
         
         # Cek kalau suhu tinggi
         if msg.data > 30.0:
-            print('⚠️ Peringatan: Suhu terlalu tinggi!')
+            print('Peringatan: Suhu terlalu tinggi!')
 ```
 
 **Penjelasan:**
@@ -420,10 +415,10 @@ class MyNode(Node):
 ```
 
 **Keunggulan:**
-- ✅ Mudah dipelajari dan cepat prototyping
-- ✅ Cocok untuk machine learning (TensorFlow, PyTorch)
-- ✅ Rich ecosystem (NumPy, OpenCV, SciPy)
-- ✅ Ideal untuk computer vision dan AI
+-  Mudah dipelajari dan cepat prototyping
+-  Cocok untuk machine learning (TensorFlow, PyTorch)
+-  Rich ecosystem (NumPy, OpenCV, SciPy)
+-  Ideal untuk computer vision dan AI
 
 **Kapan Digunakan:**
 - Prototyping dan development cepat

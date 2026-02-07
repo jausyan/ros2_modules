@@ -62,7 +62,7 @@ simple_location_cpp/
 
 Kita akan menaruh kode C++ di folder `src/`.
 
-buapublisher sederhana [klik disini](https://docs.ros.org/en/foxy/Tutorials/Beginner-Client-Libraries/Writing-A-Simple-Cpp-Publisher-And-Subscriber.html)
+buat publisher sederhana [klik disini](https://docs.ros.org/en/foxy/Tutorials/Beginner-Client-Libraries/Writing-A-Simple-Cpp-Publisher-And-Subscriber.html)
 
 ---
 
@@ -307,17 +307,8 @@ Walaupun sederhana, pola ini sama dengan pola yang dipakai di robot nyata:
 
 Untuk memperkuat pemahaman, coba modifikasi contoh ini:
 
-1. **Ubah nilai goal**
-	 - Jadikan `goal_location_` sebagai parameter yang bisa di-set dari command line.
-
-2. **Tambahkan kondisi berhenti**
+1. **Tambahkan kondisi berhenti**
 	 - Jika `distance` sudah lebih kecil dari 0.1, berhenti menambah `current_location_`.
-
-3. **Pisahkan current dan goal ke topic lain**
-	 - Misalnya:
-		 - `/current_location` (Float64)
-		 - `/goal_location` (Float64)
-		 - `/distance_to_goal` (Float64)
 
 Dengan latihan-latihan kecil ini, kamu akan semakin nyaman dengan konsep node, publisher, topic, dan cara build project C++ di ROS 2.
 
@@ -489,61 +480,42 @@ Ini adalah pola yang sangat umum dipakai di project robot nyata, misalnya untuk 
 
 ---
 
-## 11. Mengolah Data dari Topic (Package `sensor`)
+## 11. Mengolah Data dari Topic: Subscriber Kalikan 2
 
 Setelah kamu bisa **mempublish** data dan mengatur nilai lewat **parameter/config**, langkah berikutnya adalah belajar **mengolah data dari topic**.
 
 Di robot nyata biasanya ada pola seperti ini:
 
 - Node **sensor** → publish data mentah (misalnya posisi, kecepatan, jarak, dsb.).
-- Node **processing** → subscribe ke data tersebut, melakukan perhitungan, lalu mengirim hasilnya (misalnya jarak ke goal, error, perintah kontrol).
+- Node **processing** → subscribe ke data tersebut, melakukan perhitungan, lalu mengirim hasilnya.
 
-Untuk memperjelas konsep dan tetap sederhana, di sini kita akan membuat **package baru** bernama `sensor` yang akan:
+Pada contoh ini kita akan membuat:
 
-1. Punya node publisher (seolah-olah ini sensor robot) yang mengirim **tiga topic bertipe float**:
-	- `/current_location` (Float64)
-	- `/goal_location` (Float64)
-	- `/speed` (Float64)
-2. Punya node subscriber yang:
-	- Subscribe ke tiga topic tersebut
-	- Menghitung `distance = goal_location - current_location`
-	- Mencetak hasilnya ke terminal
+1. **Publisher** yang mengirim data `current_location` (Float64) ke topic `/gps`
+2. **Subscriber** yang menerima data dari `/gps`, mengalikan dengan 2, lalu mencetak hasilnya
 
-Di contoh ini **tidak ada parsing string**. Data langsung dikirim dan diterima sebagai angka (`double`).
+Konsep yang dipelajari: **publish data → subscribe → olah data (× 2)**.
 
-### 11.1. Membuat Package `sensor`
+### 11.1. Membuat Package Baru
 
-Di dalam workspace yang sama, buat package baru:
+Kita akan membuat package baru bernama `gps_processor` untuk contoh ini:
 
 ```bash
 cd ~/ros2_cpp_ws/src
 
 ros2 pkg create \
 	--build-type ament_cmake \
-	sensor \
+	gps_processor \
 	--dependencies rclcpp std_msgs
 ```
 
-Struktur awal:
+### 11.2. Publisher: Mengirim Current Location
+
+Buat file `src/gps_publisher.cpp`:
 
 ```bash
-sensor/
-├── CMakeLists.txt
-├── include/
-│   └── sensor/
-├── package.xml
-└── src/
-```
-
-### 11.2. Node Publisher: `sensor_publisher` (Float64)
-
-Node ini seolah-olah adalah **sensor** yang mengirim data posisi dan kecepatan dalam bentuk angka `double`.
-
-Buat file `src/sensor_publisher.cpp`:
-
-```bash
-cd ~/ros2_cpp_ws/src/sensor
-touch src/sensor_publisher.cpp
+cd ~/ros2_cpp_ws/src/gps_processor
+touch src/gps_publisher.cpp
 ```
 
 Isi dengan kode berikut:
@@ -557,85 +529,64 @@ Isi dengan kode berikut:
 
 using namespace std::chrono_literals;
 
-class SensorPublisher : public rclcpp::Node
+class GpsPublisher : public rclcpp::Node
 {
 public:
-	SensorPublisher()
-	: Node("sensor_publisher"),
-		current_location_(0.0),
-		goal_location_(10.0),
-		speed_(0.5)
+	GpsPublisher()
+	: Node("gps_publisher"),
+		current_location_(0.0)  // Posisi awal 0.0
 	{
-		current_pub_ = this->create_publisher<std_msgs::msg::Float64>("/current_location", 10);
-		goal_pub_    = this->create_publisher<std_msgs::msg::Float64>("/goal_location", 10);
-		speed_pub_   = this->create_publisher<std_msgs::msg::Float64>("/speed", 10);
+		// Publisher ke topic /gps dengan tipe Float64
+		publisher_ = this->create_publisher<std_msgs::msg::Float64>("/gps", 10);
 
+		// Timer publish setiap 1 detik
 		timer_ = this->create_wall_timer(
-			1000ms, std::bind(&SensorPublisher::timer_callback, this));
+			1000ms, std::bind(&GpsPublisher::timer_callback, this));
 
-		RCLCPP_INFO(this->get_logger(), "SensorPublisher started");
+		RCLCPP_INFO(this->get_logger(), "GPS Publisher started");
 	}
 
 private:
 	void timer_callback()
 	{
-		auto current_msg = std_msgs::msg::Float64();
-		auto goal_msg    = std_msgs::msg::Float64();
-		auto speed_msg   = std_msgs::msg::Float64();
+		auto msg = std_msgs::msg::Float64();
+		msg.data = current_location_;
 
-		current_msg.data = current_location_;
-		goal_msg.data    = goal_location_;
-		speed_msg.data   = speed_;
+		publisher_->publish(msg);
+		RCLCPP_INFO(this->get_logger(), "Publishing current_location: %.2f", current_location_);
 
-		current_pub_->publish(current_msg);
-		goal_pub_->publish(goal_msg);
-		speed_pub_->publish(speed_msg);
-
-		RCLCPP_INFO(this->get_logger(),
-			"Publish: current=%.2f, goal=%.2f, speed=%.2f",
-			current_location_, goal_location_, speed_);
-
-		// Update current_location seolah-olah robot bergerak
-		current_location_ += speed_;
+		// Update posisi: tambah 1.0 setiap detik
+		current_location_ += 1.0;
 	}
 
-	rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr current_pub_;
-	rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr goal_pub_;
-	rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr speed_pub_;
+	rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr publisher_;
 	rclcpp::TimerBase::SharedPtr timer_;
-
 	double current_location_;
-	double goal_location_;
-	double speed_;
 };
 
 int main(int argc, char * argv[])
 {
 	rclcpp::init(argc, argv);
-	rclcpp::spin(std::make_shared<SensorPublisher>());
+	rclcpp::spin(std::make_shared<GpsPublisher>());
 	rclcpp::shutdown();
 	return 0;
 }
 ```
 
-Penjelasan singkat:
+**Penjelasan:**
 
-- Node bernama `sensor_publisher`.
-- Setiap 1 detik publish **tiga topic float**:
-	- `/current_location`
-	- `/goal_location`
-	- `/speed`
-- `current_location_` bertambah terus dengan `speed_` seperti robot berjalan.
+- Node `gps_publisher` publish nilai `current_location` ke topic `/gps`
+- Tipe data: `std_msgs::msg::Float64` (angka float/double)
+- Nilai dimulai dari 0.0 dan bertambah 1.0 setiap detik
+- **Tidak pakai config.yaml**, semua nilai langsung di kode
 
-### 11.3. Node Subscriber: `distance_processor` (langsung float)
+### 11.3. Subscriber: Mengolah Data (× 2)
 
-Node ini akan **subscribe** ke tiga topic float, lalu menghitung `distance` dan mencetak hasilnya.
-
-Buat file `src/distance_processor.cpp`:
+Buat file `src/gps_subscriber.cpp`:
 
 ```bash
-cd ~/ros2_cpp_ws/src/sensor
-touch src/distance_processor.cpp
+cd ~/ros2_cpp_ws/src/gps_processor
+touch src/gps_subscriber.cpp
 ```
 
 Isi dengan kode berikut:
@@ -646,105 +597,61 @@ Isi dengan kode berikut:
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/float64.hpp"
 
-class DistanceProcessor : public rclcpp::Node
+class GpsSubscriber : public rclcpp::Node
 {
 public:
-	DistanceProcessor()
-	: Node("distance_processor"),
-		current_(0.0),
-		goal_(0.0),
-		speed_(0.0),
-		have_current_(false),
-		have_goal_(false),
-		have_speed_(false)
+	GpsSubscriber()
+	: Node("gps_subscriber")
 	{
-		current_sub_ = this->create_subscription<std_msgs::msg::Float64>(
-			"/current_location", 10,
-			std::bind(&DistanceProcessor::current_callback, this, std::placeholders::_1));
+		// Subscribe ke topic /gps
+		subscription_ = this->create_subscription<std_msgs::msg::Float64>(
+			"/gps", 10,
+			std::bind(&GpsSubscriber::topic_callback, this, std::placeholders::_1));
 
-		goal_sub_ = this->create_subscription<std_msgs::msg::Float64>(
-			"/goal_location", 10,
-			std::bind(&DistanceProcessor::goal_callback, this, std::placeholders::_1));
-
-		speed_sub_ = this->create_subscription<std_msgs::msg::Float64>(
-			"/speed", 10,
-			std::bind(&DistanceProcessor::speed_callback, this, std::placeholders::_1));
-
-		RCLCPP_INFO(this->get_logger(),
-			"DistanceProcessor started, waiting for /current_location, /goal_location, /speed");
+		RCLCPP_INFO(this->get_logger(), "GPS Subscriber started, waiting for /gps data...");
 	}
 
 private:
-	void current_callback(const std_msgs::msg::Float64::SharedPtr msg)
+	void topic_callback(const std_msgs::msg::Float64::SharedPtr msg)
 	{
-		current_ = msg->data;
-		have_current_ = true;
-		compute_and_log();
-	}
+		// Ambil data current_location dari topic
+		double current_location = msg->data;
 
-	void goal_callback(const std_msgs::msg::Float64::SharedPtr msg)
-	{
-		goal_ = msg->data;
-		have_goal_ = true;
-		compute_and_log();
-	}
+		// Kalikan dengan 2
+		double location_x2 = current_location * 2.0;
 
-	void speed_callback(const std_msgs::msg::Float64::SharedPtr msg)
-	{
-		speed_ = msg->data;
-		have_speed_ = true;
-		compute_and_log();
-	}
-
-	void compute_and_log()
-	{
-		// Pastikan semua data sudah pernah diterima
-		if (!have_current_ || !have_goal_ || !have_speed_) {
-			return;
-		}
-
-		double distance = goal_ - current_;
+		// Tampilkan hasil
 		RCLCPP_INFO(this->get_logger(),
-			"current=%.2f, goal=%.2f, speed=%.2f, distance=%.2f",
-			current_, goal_, speed_, distance);
+			"Received: %.2f | Processed (x2): %.2f",
+			current_location, location_x2);
 	}
 
-	rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr current_sub_;
-	rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr goal_sub_;
-	rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr speed_sub_;
-
-	double current_;
-	double goal_;
-	double speed_;
-	bool have_current_;
-	bool have_goal_;
-	bool have_speed_;
+	rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr subscription_;
 };
 
 int main(int argc, char * argv[])
 {
 	rclcpp::init(argc, argv);
-	rclcpp::spin(std::make_shared<DistanceProcessor>());
+	rclcpp::spin(std::make_shared<GpsSubscriber>());
 	rclcpp::shutdown();
 	return 0;
 }
 ```
 
-Di sini kamu belajar:
+**Penjelasan:**
 
-- Cara membuat **subscriber** ke beberapa topic bertipe `Float64`.
-- Cara menyimpan nilai terakhir dari masing-masing topic.
-- Cara menghitung nilai turunan (`distance = goal - current`) tanpa parsing string.
+- Node `gps_subscriber` subscribe ke topic `/gps`
+- Setiap terima data, ambil nilai dari `msg->data`
+- Kalikan dengan 2: `location_x2 = current_location * 2.0`
+- Cetak hasil: nilai asli dan hasil perkalian
 
-### 11.4. Update `CMakeLists.txt` Package `sensor`
+### 11.4. Update CMakeLists.txt
 
-Sekarang daftarkan kedua executable ini di `sensor/CMakeLists.txt`.
-
-Contoh isi minimal:
+Edit file `gps_processor/CMakeLists.txt`:
 
 ```cmake
 cmake_minimum_required(VERSION 3.8)
-project(sensor)
+project(gps_processor)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 	add_compile_options(-Wall -Wextra -Wpedantic)
@@ -754,24 +661,26 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 
-add_executable(sensor_publisher src/sensor_publisher.cpp)
-ament_target_dependencies(sensor_publisher rclcpp std_msgs)
+# Executable untuk publisher
+add_executable(gps_publisher src/gps_publisher.cpp)
+ament_target_dependencies(gps_publisher rclcpp std_msgs)
 
-add_executable(distance_processor src/distance_processor.cpp)
-ament_target_dependencies(distance_processor rclcpp std_msgs)
+# Executable untuk subscriber
+add_executable(gps_subscriber src/gps_subscriber.cpp)
+ament_target_dependencies(gps_subscriber rclcpp std_msgs)
 
 install(TARGETS
-	sensor_publisher
-	distance_processor
+	gps_publisher
+	gps_subscriber
 	DESTINATION lib/${PROJECT_NAME}
 )
 
 ament_package()
 ```
 
-### 11.5. Build dan Menjalankan Publisher + Subscriber
+### 11.5. Build dan Menjalankan
 
-Kembali ke root workspace dan build ulang (sekarang ada package `sensor` baru):
+Build workspace:
 
 ```bash
 cd ~/ros2_cpp_ws
@@ -780,44 +689,64 @@ source /opt/ros/jazzy/setup.bash
 source install/setup.bash
 ```
 
-#### Jalankan `sensor_publisher`
-
-Di terminal pertama:
+**Jalankan Publisher** (terminal 1):
 
 ```bash
 source /opt/ros/jazzy/setup.bash
 source ~/ros2_cpp_ws/install/setup.bash
 
-ros2 run sensor sensor_publisher
+ros2 run gps_processor gps_publisher
 ```
 
-#### Jalankan `distance_processor`
-
-Di terminal kedua:
+**Jalankan Subscriber** (terminal 2):
 
 ```bash
 source /opt/ros/jazzy/setup.bash
 source ~/ros2_cpp_ws/install/setup.bash
 
-ros2 run sensor distance_processor
+ros2 run gps_processor gps_subscriber
 ```
 
-Kamu akan melihat log di terminal kedua seperti:
+### 11.6. Output yang Diharapkan
+
+**Terminal 1 (publisher):**
 
 ```text
-[INFO] [xxxx.xx] [distance_processor]: current=0.00, goal=10.00, speed=0.50, distance=10.00
-[INFO] [xxxx.xx] [distance_processor]: current=0.50, goal=10.00, speed=0.50, distance=9.50
-[INFO] [xxxx.xx] [distance_processor]: current=1.00, goal=10.00, speed=0.50, distance=9.00
+[INFO] [gps_publisher]: GPS Publisher started
+[INFO] [gps_publisher]: Publishing current_location: 0.00
+[INFO] [gps_publisher]: Publishing current_location: 1.00
+[INFO] [gps_publisher]: Publishing current_location: 2.00
 ...
 ```
 
-Artinya:
+**Terminal 2 (subscriber):**
 
-- Data sensor (current, goal, speed) dikirim oleh node `sensor_publisher`.
-- Node `distance_processor` **mengolah data dari topic** dan menghitung jarak ke goal.
+```text
+[INFO] [gps_subscriber]: GPS Subscriber started, waiting for /gps data...
+[INFO] [gps_subscriber]: Received: 0.00 | Processed (x2): 0.00
+[INFO] [gps_subscriber]: Received: 1.00 | Processed (x2): 2.00
+[INFO] [gps_subscriber]: Received: 2.00 | Processed (x2): 4.00
+...
+```
 
-Dengan latihan ini kamu sudah melihat alur lengkap:
+### 11.7. Konsep yang Sudah Dipelajari
 
-- Node A (sensor) → publish data mentah.
-- Node B (processor) → subscribe, olah data, dan hasilnya bisa dipakai lagi (misalnya nanti untuk kontrol motor).
+Dengan contoh sederhana ini, kamu sudah belajar:
 
+✅ **Publisher** mengirim data float ke topic  
+✅ **Subscriber** menerima data dari topic  
+✅ **Mengolah data** yang diterima (kalikan 2)  
+✅ **Komunikasi antar node** melalui topic  
+
+Di robot nyata, pola ini sangat umum:
+- GPS sensor → publish koordinat → Navigation node hitung jarak
+- Kamera → publish image → Vision node deteksi objek
+- Lidar → publish point cloud → Mapping node buat peta
+
+### 11.8. Latihan untuk Kamu
+
+Coba modifikasi untuk memperdalam pemahaman:
+
+1. **Ubah operasi**: Ganti `× 2` menjadi `÷ 2` atau `+ 10`
+2. **Tambah kondisi**: Hanya proses jika `current_location > 5.0`
+3. **Publish hasil**: Buat publisher di subscriber yang kirim hasil ke topic `/processed_gps`
