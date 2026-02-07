@@ -644,9 +644,3 @@ ros2 topic echo <TAB>  # List available topics
 
 Lanjut ke [Membuat Workspace ROS 2](05_membuat_workspace.md) untuk mulai coding!
 
----
-
-**💡 Tips**: 
-- Bookmark cheat sheet ini
-- Eksperimen dengan demo nodes
-- Gunakan `--help` pada setiap command untuk detail

@@ -1,4 +1,4 @@
-# 2. Instalasi ROS 2 Jazzy
+# 2. Instalasi ROS 2 Humble
 
 ## Persyaratan Sistem
 
@@ -18,14 +18,14 @@ Panduan ini fokus pada **Ubuntu 24.04**.
 
 ## Metode Instalasi
 
-Ada 3 cara instalasi ROS 2 Jazzy:
+Ada 3 cara instalasi ROS 2 Humble:
 1. **Debian Packages** (Recommended - paling mudah)
 2. **Build from Source** (untuk development)
 3. **Docker** (untuk isolation)
 
 Kita akan menggunakan metode **Debian Packages**.
 
-## Instalasi ROS 2 Jazzy di Ubuntu 24.04
+## Instalasi ROS 2 Humble di Ubuntu 24.04
 
 ### Step 1: Setup Locale
 
@@ -69,25 +69,25 @@ sudo apt update
 # Upgrade packages
 sudo apt upgrade
 
-# Install ROS 2 Jazzy Desktop (Recommended)
-sudo apt install ros-jazzy-desktop
+# Install ROS 2 Humble Desktop (Recommended)
+sudo apt install ros-Humble-desktop
 
 # Atau install ROS 2 Base (minimal, tanpa GUI tools)
-# sudo apt install ros-jazzy-ros-base
+# sudo apt install ros-Humble-ros-base
 
 # Install development tools
 sudo apt install ros-dev-tools
 ```
 
 **Pilihan Instalasi:**
-- `ros-jazzy-desktop`: RViz, demos, tutorials (2GB+)
-- `ros-jazzy-ros-base`: Core ROS 2 tanpa GUI tools (500MB)
+- `ros-Humble-desktop`: RViz, demos, tutorials (2GB+)
+- `ros-Humble-ros-base`: Core ROS 2 tanpa GUI tools (500MB)
 
 ### Step 4: Setup Environment
 
 ```bash
 # Source ROS 2 setup file
-source /opt/ros/jazzy/setup.bash
+source /opt/ros/Humble/setup.bash
 
 # Verify installation
 ros2 --help
@@ -109,7 +109,7 @@ options:
 
 ```bash
 # Tambahkan ke .bashrc agar otomatis source setiap terminal baru
-echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
+echo "source /opt/ros/Humble/setup.bash" >> ~/.bashrc
 
 # Reload bashrc
 source ~/.bashrc
@@ -141,10 +141,10 @@ rosdep update
 sudo apt install \
   python3-pip \
   python3-pytest-cov \
-  ros-jazzy-rviz2 \
-  ros-jazzy-rqt* \
-  ros-jazzy-demo-nodes-cpp \
-  ros-jazzy-demo-nodes-py
+  ros-Humble-rviz2 \
+  ros-Humble-rqt* \
+  ros-Humble-demo-nodes-cpp \
+  ros-Humble-demo-nodes-py
 ```
 
 ## Verifikasi Instalasi
@@ -159,13 +159,13 @@ ros2 doctor
 
 **Terminal 1** (Talker):
 ```bash
-source /opt/ros/jazzy/setup.bash
+source /opt/ros/Humble/setup.bash
 ros2 run demo_nodes_cpp talker
 ```
 
 **Terminal 2** (Listener):
 ```bash
-source /opt/ros/jazzy/setup.bash
+source /opt/ros/Humble/setup.bash
 ros2 run demo_nodes_py listener
 ```
 
@@ -234,8 +234,8 @@ sudo apt install \
 
 **Solution:**
 ```bash
-source /opt/ros/jazzy/setup.bash
-echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
+source /opt/ros/Humble/setup.bash
+echo "source /opt/ros/Humble/setup.bash" >> ~/.bashrc
 ```
 
 ### Problem 2: Repository tidak ditemukan
@@ -274,7 +274,7 @@ export LANG=en_US.UTF-8
 
 ```bash
 # Remove ROS 2 packages
-sudo apt remove ~nros-jazzy-* && sudo apt autoremove
+sudo apt remove ~nros-Humble-* && sudo apt autoremove
 
 # Remove repository
 sudo rm /etc/apt/sources.list.d/ros2.list
@@ -290,7 +290,7 @@ Setelah source setup.bash, beberapa environment variables di-set:
 printenv | grep ROS
 
 # Important variables:
-# ROS_DISTRO=jazzy
+# ROS_DISTRO=Humble
 # ROS_VERSION=2
 # ROS_PYTHON_VERSION=3
 ```
@@ -299,7 +299,7 @@ printenv | grep ROS
 
 **Yang sudah kita lakukan:**
 1. Setup locale dan sources
-2. Install ROS 2 Jazzy Desktop
+2. Install ROS 2 Humble Desktop
 3. Install development tools (colcon, rosdep)
 4. Auto-source environment
 5. Verifikasi instalasi dengan demo
@@ -313,9 +313,3 @@ printenv | grep ROS
 
 Lanjut ke [Konsep Dasar ROS 2](04_perintah_dasar.md) untuk memahami fundamental ROS 2!
 
----
-
-**💡 Tips**: 
-- Selalu source environment sebelum menggunakan ROS 2
-- Gunakan `ros2 doctor` untuk check health system
-- Bookmark ROS 2 documentation untuk referensi
