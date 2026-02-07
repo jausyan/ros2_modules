@@ -733,10 +733,10 @@ ros2 run gps_processor gps_subscriber
 
 Dengan contoh sederhana ini, kamu sudah belajar:
 
-✅ **Publisher** mengirim data float ke topic  
-✅ **Subscriber** menerima data dari topic  
-✅ **Mengolah data** yang diterima (kalikan 2)  
-✅ **Komunikasi antar node** melalui topic  
+**Publisher** mengirim data float ke topic  
+**Subscriber** menerima data dari topic  
+**Mengolah data** yang diterima (kalikan 2)  
+**Komunikasi antar node** melalui topic  
 
 Di robot nyata, pola ini sangat umum:
 - GPS sensor → publish koordinat → Navigation node hitung jarak
@@ -750,3 +750,5 @@ Coba modifikasi untuk memperdalam pemahaman:
 1. **Ubah operasi**: Ganti `× 2` menjadi `÷ 2` atau `+ 10`
 2. **Tambah kondisi**: Hanya proses jika `current_location > 5.0`
 3. **Publish hasil**: Buat publisher di subscriber yang kirim hasil ke topic `/processed_gps`
+
+Lanjut ke [suprizeee](06_suprizeee.md) untuk memulai setup environment Anda!

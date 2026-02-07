@@ -439,10 +439,10 @@ public:
 ```
 
 **Keunggulan:**
-- ✅ Performa tinggi dan low latency
-- ✅ Memory efficient
-- ✅ Deterministic execution
-- ✅ Real-time capable
+- Performa tinggi dan low latency
+- Memory efficient
+- Deterministic execution
+- Real-time capable
 
 **Kapan Digunakan:**
 - Control loops yang membutuhkan real-time performance
@@ -544,10 +544,10 @@ ROS 2 menyediakan ekosistem tools yang lengkap untuk development robotik:
 - Mendukung multiple platform dan bahasa pemrograman
 - Cocok untuk pengembangan robot profesional dan penelitian
 
-## 🎯 Next Steps
+## Next Steps
 
 Lanjut ke [Instalasi ROS 2 Jazzy](02_instalasi.md) untuk memulai setup environment Anda!
 
 ---
 
-**💡 Tips**: Jangan terburu-buru. Pahami konsep fundamental dulu sebelum jumping ke coding!
+**Tips**: Jangan terburu-buru. Pahami konsep fundamental dulu sebelum jumping ke coding!
