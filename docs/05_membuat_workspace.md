@@ -349,11 +349,11 @@ touch config/config.yaml
 Isi file `config/config.yaml` dengan isi seperti berikut:
 
 ```yaml
-simple_location_cpp:
+/**:
   ros__parameters:
-    current_location: 0.0
-    goal_location: 10.0
-    speed: 0.5
+    current_location: 100.0
+    goal_location: 500.0
+    speed: 10.0
 ```
 
 Keterangan:
